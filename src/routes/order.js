@@ -11,4 +11,7 @@ router.get('/order/:numeroPedido', orderController.getItem);
 // Rota para criar um novo Pedido
 router.post('/order', orderController.createOrder);
 
+// Rota para consultar um Pedido pelo numeroPedido
+router.delete('/order/:numeroPedido', orderController.deleteItem);
+
 module.exports = router;

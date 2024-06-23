@@ -46,6 +46,38 @@ async function createOrder(req, res) {
     }
 }
 
+// Rota para deletar uma Order pelo número do pedido
+async function deleteItem(req, res) {
+    const { numeroPedido } = req.params;
+
+    try {
+        // Inicia uma transação para garantir a consistência dos dados
+        await sequelize.transaction(async (transaction) => {
+            // Deleta a Order
+            const deletedRows = await Order.destroy({
+                where: { numeroPedido },
+                transaction
+            });
+
+            if (deletedRows === 0) {
+                throw new Error('Order não encontrada');
+            }
+
+            // Deleta todos os Items associados à Order
+            await Items.destroy({
+                where: { orderId: numeroPedido },
+                transaction
+            });
+
+            // Não é necessário commitar a transação explicitamente, o Sequelize faz isso automaticamente
+
+            res.status(200).json({ message: 'Order deletada com sucesso!' });
+        });
+    } catch (error) {
+        console.error('Erro ao deletar a Order:', error);
+        res.status(500).json({ error: 'Erro interno ao deletar a Order' });
+    }
+}
 
 // Rota para consultar uma Order pelo número do pedido
 async function getItem(req, res) {
@@ -74,4 +106,5 @@ module.exports = {
     listOrders,
     createOrder,
     getItem,
+    deleteItem,
 };
