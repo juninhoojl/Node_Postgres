@@ -1,7 +1,4 @@
-// /src/controllers/orderController.js
-const db = require('../models');
-const Order = db.Order;
-const Items = db.Items;
+const { Order, Items, sequelize } = require('../models');
 
 // Função para listar todas os Pedidos
 async function listOrders(req, res) {
@@ -16,7 +13,40 @@ async function listOrders(req, res) {
     }
 }
 
+// Função para criar uma nova Order com Items
+async function createOrder(req, res) {
+    const { numeroPedido, valorTotal, dataCriacao, items } = req.body;
+
+    try {
+        // Cria uma transação para garantir a consistência dos dados
+        await sequelize.transaction(async (transaction) => {
+            // Cria a Order
+            const order = await Order.create({
+                numeroPedido,
+                valorTotal,
+                dataCriacao
+            }, { transaction });
+
+            // Cria os Items associados à Order
+            await Promise.all(items.map(async (item) => {
+                await Items.create({
+                    orderId: numeroPedido,
+                    idItem: item.idItem,
+                    quantidadeItem: item.quantidadeItem,
+                    valorItem: item.valorItem
+                }, { transaction });
+            }));
+
+            // Envie a resposta ao cliente apenas uma vez, depois de confirmar a transação
+            res.status(201).json({ message: 'Order criada com sucesso!' });
+        });
+    } catch (error) {
+        console.error('Erro ao criar a Order:', error);
+        res.status(500).json({ error: 'Erro interno ao criar a Order' });
+    }
+}
+
 module.exports = {
-    listOrders
-    // Outras funções de controle aqui
+    listOrders,
+    createOrder,
 };
