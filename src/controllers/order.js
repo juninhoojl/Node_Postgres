@@ -46,7 +46,32 @@ async function createOrder(req, res) {
     }
 }
 
+
+// Rota para consultar uma Order pelo número do pedido
+async function getItem(req, res) {
+    const { numeroPedido } = req.params;
+
+    try {
+        // Busca a Order pelo número do pedido
+        const order = await Order.findOne({
+            where: { numeroPedido },
+            include: Items // Inclui os Items associados à Order na consulta
+        });
+
+        if (order) {
+            res.status(200).json(order);
+        } else {
+            res.status(404).json({ message: 'Order não encontrada' });
+        }
+    } catch (error) {
+        console.error('Erro ao consultar a Order:', error);
+        res.status(500).json({ error: 'Erro interno ao consultar a Order' });
+    }
+}
+
+
 module.exports = {
     listOrders,
     createOrder,
+    getItem,
 };

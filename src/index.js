@@ -9,7 +9,7 @@ const app = express();
 app.use(bodyParser.json());
 
 // Configuração das rotas
-app.use('/order', orderRoutes);
+app.use('/', orderRoutes);
 
 // Sincroniza o Sequelize com o banco de dados e inicia o servidor
 sequelize.sync().then(() => {

@@ -8,7 +8,6 @@ const sequelize = new Sequelize(process.env.DATABASE_URL, {
 
 const db = {};
 
-db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 
 db.Order = require('./order')(sequelize, Sequelize.DataTypes);
