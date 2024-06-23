@@ -101,10 +101,59 @@ async function getItem(req, res) {
     }
 }
 
+// Rota para atualizar uma Order pelo número do pedido
+async function updateItem(req, res) {
+    const { numeroPedido } = req.params;
+    const { valorTotal, dataCriacao, items } = req.body;
+
+    try {
+        // Inicia uma transação para garantir a consistência dos dados
+        await sequelize.transaction(async (transaction) => {
+            // Atualiza a Order
+            const [, updatedOrder] = await Order.update({
+                valorTotal,
+                dataCriacao
+            }, {
+                where: { numeroPedido },
+                returning: true,
+                transaction
+            });
+
+            if (!updatedOrder) {
+                throw new Error('Order não encontrada');
+            }
+
+            // Deleta todos os Items associados à Order
+            await Items.destroy({
+                where: { orderId: numeroPedido },
+                transaction
+            });
+
+            // Cria os novos Items associados à Order
+            await Promise.all(items.map(async (item) => {
+                await Items.create({
+                    orderId: numeroPedido,
+                    idItem: item.idItem,
+                    quantidadeItem: item.quantidadeItem,
+                    valorItem: item.valorItem
+                }, { transaction });
+            }));
+
+            // Não é necessário commitar a transação explicitamente, o Sequelize faz isso automaticamente
+
+            res.status(200).json({ message: 'Order atualizada com sucesso!' });
+        });
+    } catch (error) {
+        console.error('Erro ao atualizar a Order:', error);
+        res.status(500).json({ error: 'Erro interno ao atualizar a Order' });
+    }
+}
+
 
 module.exports = {
     listOrders,
     createOrder,
     getItem,
     deleteItem,
+    updateItem,
 };

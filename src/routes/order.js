@@ -14,4 +14,7 @@ router.post('/order', orderController.createOrder);
 // Rota para consultar um Pedido pelo numeroPedido
 router.delete('/order/:numeroPedido', orderController.deleteItem);
 
+// Rota para consultar um Pedido pelo numeroPedido
+router.put('/order/:numeroPedido', orderController.updateItem);
+
 module.exports = router;
